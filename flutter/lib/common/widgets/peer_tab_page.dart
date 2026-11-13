@@ -25,9 +25,11 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../common.dart';
 import '../../models/platform_model.dart';
+import '../../limafac/sectioned_page.dart';
 
 class PeerTabPage extends StatefulWidget {
-  const PeerTabPage({Key? key}) : super(key: key);
+  const PeerTabPage({Key? key, this.limaFacLayout = false}) : super(key: key);
+  final bool limaFacLayout;
   @override
   State<PeerTabPage> createState() => _PeerTabPageState();
 }
@@ -102,6 +104,7 @@ class _PeerTabPageState extends State<PeerTabPage>
   @override
   Widget build(BuildContext context) {
     final model = Provider.of<PeerTabModel>(context);
+    if (widget.limaFacLayout) return _buildLimaFacDevices(context, model);
     Widget selectionWrap(Widget widget) {
       return model.multiSelectionMode ? createMultiSelectionBar(model) : widget;
     }
@@ -133,6 +136,72 @@ class _PeerTabPageState extends State<PeerTabPage>
         _createPeersView(),
       ],
     );
+  }
+
+  Widget _buildLimaFacDevices(BuildContext context, PeerTabModel model) {
+    const sections = [
+      LimaFacSectionItem('Últimas conexiones', Icons.history_rounded,
+        subtitle: 'Equipos a los que te has conectado recientemente.'),
+      LimaFacSectionItem('Favoritos', Icons.star_outline_rounded,
+        subtitle: 'Tus equipos guardados como favoritos.'),
+      LimaFacSectionItem('En la red', Icons.lan_outlined,
+        subtitle: 'Equipos descubiertos en la red local.'),
+      LimaFacSectionItem('Libreta de direcciones', Icons.contacts_outlined),
+      LimaFacSectionItem('Equipos accesibles', Icons.devices_outlined),
+    ];
+    final visible = model.visibleEnabledOrderedIndexs;
+    Widget content = Column(children: [_createPeersView()]);
+    if (model.currentTab >= 0 && model.currentTab < 3) {
+      final peers = [gFFI.recentPeersModel, gFFI.favoritePeersModel, gFFI.lanPeersModel][model.currentTab];
+      content = ChangeNotifierProvider<Peers>.value(value: peers,
+        child: Consumer<Peers>(child: content, builder: (context, peers, child) => Stack(children: [
+          child!,
+          if (peers.peers.isEmpty) Positioned.fill(child: LimaFacEmptyDevices(
+            title: model.currentTab == 0 ? 'Aún no hay conexiones' : 'No hay equipos en esta vista',
+            message: model.currentTab == 0
+              ? 'Los equipos aparecerán después de tu primera conexión.'
+              : 'Los dispositivos disponibles aparecerán aquí.',
+          )),
+        ])),
+      );
+    }
+    return visibleContextMenuListener(LimaFacSectionedPage(
+      navigationTitle: 'Mis dispositivos',
+      searchNavigation: true,
+      sections: visible.map((index) => sections[index]).toList(),
+      selected: visible.indexOf(model.currentTab),
+      onSelected: isOptionFixed(kOptionPeerTabIndex) ? null : (index) async {
+        final tab = visible[index];
+        await handleTabSelection(tab);
+        await bind.setLocalFlutterOption(k: kOptionPeerTabIndex, v: tab.toString());
+      },
+      actions: model.multiSelectionMode
+        ? [SizedBox(width: 480, child: createMultiSelectionBar(model))]
+        : [..._landscapeRightActions(context), const SizedBox(width: 12),
+            OutlinedButton.icon(onPressed: _showLimaFacConnection,
+              icon: const Icon(Icons.add_rounded, size: 18), label: const Text('Conectar'))],
+      child: content,
+    ));
+  }
+
+  Future<void> _showLimaFacConnection() async {
+    final controller = TextEditingController();
+    await showDialog<void>(context: context, builder: (dialogContext) {
+      void submit() {
+        final id = controller.text.trim();
+        if (id.isEmpty) return;
+        Navigator.of(dialogContext).pop();
+        connect(context, id);
+      }
+      return AlertDialog(title: const Text('Conectar a un equipo'),
+        content: SizedBox(width: 360, child: TextField(controller: controller,
+          autofocus: true, onSubmitted: (_) => submit(),
+          decoration: const InputDecoration(labelText: 'ID o dirección IP'))),
+        actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancelar')),
+          ElevatedButton(onPressed: submit, child: const Text('Conectar'))],
+      );
+    });
+    controller.dispose();
   }
 
   Widget _createSwitchBar(BuildContext context) {

@@ -24,6 +24,8 @@ class LimaFacBrand {
     return base.copyWith(
       colorScheme: base.colorScheme.copyWith(
         primary: primary,
+        secondary: primary,
+        onSecondary: dark ? ink : Colors.white,
         onPrimary: dark ? ink : Colors.white,
         surface: surface,
         onSurface: foreground,

@@ -68,12 +68,23 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     super.build(context);
     if (_usesLimaFacUi) {
       return _buildBlock(child: LimaFacHomeShell(
+        key: limaFacHomeShellKey,
+        themeBuilder: (dark) => dark ? MyTheme.darkTheme : MyTheme.lightTheme,
         onSettings: bind.isDisableSettings() ? null : DesktopTabPage.onAddSetting,
+        settingsBuilder: bind.isDisableSettings() ? null : (initialSection, dark, onThemeChanged) =>
+            DesktopSettingPage(
+              initialTabkey: initialSection > 0 && initialSection <= DesktopSettingPage.tabKeys.length
+                  ? DesktopSettingPage.tabKeys[initialSection - 1] : SettingsTabKey.general,
+              limaFacLayout: true,
+              initialLimaFacSection: initialSection,
+              limaFacDark: dark,
+              onLimaFacThemeChanged: onThemeChanged,
+            ),
         onQuickConnect: (id) => connect(context, id),
         needsSetup: isMacOS &&
             (!bind.mainIsCanScreenRecording(prompt: false) ||
                 !bind.mainIsProcessTrusted(prompt: false)),
-        devices: const PeerTabPage(),
+        devices: const PeerTabPage(limaFacLayout: true),
         status: const OnlineStatusWidget(compact: true),
         warning: buildPresetPasswordWarning(),
         setup: Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),

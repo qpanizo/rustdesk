@@ -27,6 +27,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../common/widgets/dialog.dart';
 import '../../common/widgets/login.dart';
+import '../../limafac/sectioned_page.dart';
+import '../../limafac/settings_widgets.dart';
 
 const double _kTabWidth = 200;
 const double _kTabHeight = 42;
@@ -63,6 +65,10 @@ enum SettingsTabKey {
 
 class DesktopSettingPage extends StatefulWidget {
   final SettingsTabKey initialTabkey;
+  final bool limaFacLayout;
+  final int initialLimaFacSection;
+  final bool limaFacDark;
+  final ValueChanged<bool>? onLimaFacThemeChanged;
   static final List<SettingsTabKey> tabKeys = [
     if (bind.mainGetBuildinOption(key: kOptionHideGeneralSetting) != 'Y')
       SettingsTabKey.general,
@@ -83,7 +89,9 @@ class DesktopSettingPage extends StatefulWidget {
     SettingsTabKey.about,
   ];
 
-  DesktopSettingPage({Key? key, required this.initialTabkey}) : super(key: key);
+  DesktopSettingPage({Key? key, required this.initialTabkey,
+    this.limaFacLayout = false, this.initialLimaFacSection = 0,
+    this.limaFacDark = false, this.onLimaFacThemeChanged}) : super(key: key);
 
   @override
   State<DesktopSettingPage> createState() =>
@@ -127,6 +135,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   final RxBool _block = false.obs;
   final RxBool _canBeBlocked = false.obs;
   Timer? _videoConnTimer;
+  int _limaFacSection = 0;
 
   _DesktopSettingPageState(SettingsTabKey initialTabkey) {
     var initialIndex = DesktopSettingPage.tabKeys.indexOf(initialTabkey);
@@ -158,6 +167,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   @override
   void initState() {
     super.initState();
+    _limaFacSection = widget.initialLimaFacSection.clamp(0, DesktopSettingPage.tabKeys.length).toInt();
     WidgetsBinding.instance.addObserver(this);
     _videoConnTimer =
         periodic_immediate(Duration(milliseconds: 1000), () async {
@@ -170,6 +180,23 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       }
       _canBeBlocked.value = blocked;
     });
+  }
+
+  @override
+  void didUpdateWidget(DesktopSettingPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.limaFacLayout && oldWidget.initialLimaFacSection != widget.initialLimaFacSection) {
+      _selectLimaFacSection(widget.initialLimaFacSection);
+    }
+  }
+
+  void _selectLimaFacSection(int index) {
+    if (index < 0 || index > DesktopSettingPage.tabKeys.length) return;
+    setState(() => _limaFacSection = index);
+    if (index > 0) {
+      selectedTab.value = DesktopSettingPage.tabKeys[index - 1];
+      if (controller.hasClients) controller.jumpToPage(index - 1);
+    }
   }
 
   @override
@@ -225,7 +252,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
     for (final tab in DesktopSettingPage.tabKeys) {
       switch (tab) {
         case SettingsTabKey.general:
-          children.add(const _General());
+          children.add(_General(showTheme: !widget.limaFacLayout));
           break;
         case SettingsTabKey.safety:
           children.add(const _Safety());
@@ -276,6 +303,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (widget.limaFacLayout) return _buildLimaFacSettings();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       body: _buildBlock(
@@ -303,6 +331,28 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
         ],
       ),
     );
+  }
+
+  Widget _buildLimaFacSettings() {
+    final tabs = _settingTabs();
+    return _buildBlock(children: [Expanded(child: LimaFacSettingsScope(
+      child: LimaFacSectionedPage(
+        navigationTitle: 'Configuración',
+        sections: [
+          const LimaFacSectionItem('Personalización', Icons.palette_outlined,
+            subtitle: 'Apariencia de LimaFac Remote.'),
+          ...tabs.map((tab) => LimaFacSectionItem(translate(tab.label), tab.unselected)),
+        ],
+        selected: _limaFacSection,
+        onSelected: _selectLimaFacSection,
+        child: IndexedStack(index: _limaFacSection == 0 ? 0 : 1, children: [
+          LimaFacAppearancePanel(dark: widget.limaFacDark,
+            onChanged: widget.onLimaFacThemeChanged ?? (_) {}),
+          PageView(controller: controller,
+            physics: const NeverScrollableScrollPhysics(), children: _children()),
+        ]),
+      ),
+    ))]);
   }
 
   Widget _header(BuildContext context) {
@@ -397,7 +447,8 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
 //#region pages
 
 class _General extends StatefulWidget {
-  const _General({Key? key}) : super(key: key);
+  const _General({Key? key, this.showTheme = true}) : super(key: key);
+  final bool showTheme;
 
   @override
   State<_General> createState() => _GeneralState();
@@ -416,7 +467,7 @@ class _GeneralState extends State<_General> {
       controller: scrollController,
       children: [
         if (!isWeb) service(),
-        theme(),
+        if (widget.showTheme) theme(),
         _Card(title: 'Language', children: [language()]),
         if (!isWeb) hwcodec(),
         if (!isWeb) audio(context),
@@ -2675,6 +2726,11 @@ Widget _Card(
     {required String title,
     required List<Widget> children,
     List<Widget>? title_suffix}) {
+  return Builder(builder: (context) {
+    if (LimaFacSettingsScope.active(context)) {
+      return LimaFacSettingsGroup(title: translate(title), children: children,
+        titleSuffix: title_suffix ?? const []);
+    }
   return Row(
     children: [
       Flexible(
@@ -2705,6 +2761,7 @@ Widget _Card(
       ),
     ],
   );
+  });
 }
 
 // ignore: non_constant_identifier_names

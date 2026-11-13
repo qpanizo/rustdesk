@@ -26,11 +26,18 @@ públicos de uso y la organización de sus interfaces.
 - Distribución basada en la captura de TeamViewer proporcionada: menú lateral,
   buscador superior y un único panel central con credenciales a la izquierda
   y conexión a la derecha. La marca y los colores son de LimaFac.
-- Fondo claro por defecto y switch «Modo oscuro» para alternar la apariencia.
+- Fondo claro por defecto y switch con iconos de sol/luna, sin texto visible,
+  para alternar la apariencia.
   El modo oscuro usa lateral casi negro, paneles gris neutro y acentos turquesa;
   textos, iconos, bordes y campos se adaptan al tema.
-- «Dispositivos» abre el historial, favoritos y agenda originales. La búsqueda
-  superior conecta mediante la misma función de RustDesk que el campo principal.
+- «Dispositivos» usa navegación secundaria para últimas conexiones, favoritos,
+  red, libreta y equipos accesibles, según las funciones habilitadas en RustDesk.
+  Conserva las búsquedas, selección, ordenación y listas originales; el estado
+  vacío se presenta dentro del nuevo marco. La búsqueda superior conecta mediante
+  la misma función de RustDesk que el campo principal.
+- «Ajustes» se integra en el mismo marco, sin abrir la pestaña antigua. Incluye
+  Personalización y las categorías nativas disponibles. Las opciones y sus
+  comprobaciones originales se presentan en grupos planos y adaptables al tema.
 - Tarjeta propia de ID/contraseña enlazada a los controladores originales, con
   copia y renovación de contraseña temporal mediante los callbacks existentes.
   Se respetan los modos de aprobación y de contraseña permanente.
@@ -128,7 +135,7 @@ Comprobar también una conexión real entre dos equipos, solicitud y rechazo de
 acceso, ID/contraseña, ajuste de ventana, instalador Windows y permisos en un
 Mac limpio. Las pruebas de widgets por sí solas no validan estos flujos nativos.
 
-Validación actual: cinco pruebas de componentes con Flutter 3.47.8; todas
+Validación actual: siete pruebas de componentes con Flutter 3.47.8; todas
 pasaron. Cubren tamaños compacto/escritorio, temas claro/oscuro, navegación,
 búsqueda, credenciales y acciones de configuración/instalación.
 
@@ -142,15 +149,22 @@ ajustes de compatibilidad para Flutter reciente, conservando las fuentes del
 fork para el toolchain original.
 
 La aplicación de desarrollo está en `build/macos/LimaFacRemote.app`. Se comprobó
-el arranque y la presentación de ID real y estado del servicio. No se ha
+el arranque, la presentación de ID real y estado del servicio, Dispositivos,
+Personalización y los controles de General y Pantalla. El selector de tema
+comparte su estado entre la cabecera y Personalización; se revisaron ambos
+temas en la aplicación nativa. Se conservan las extensiones de tema de
+RustDesk para que sus controles internos se representen correctamente. No se ha
 validado una sesión remota entre dos equipos ni un instalador de Windows.
 
 ## Superficie de regresión
 
 | Archivo existente | Ruta afectada y motivo |
 | --- | --- |
-| `flutter/lib/desktop/pages/desktop_home_page.dart` | Selecciona la pantalla LimaFac en el cliente completo, cambia la representación de tarjetas y omite el botón de actualización upstream en esa variante. Los controles de sesión y callbacks de permisos se reutilizan. |
+| `flutter/lib/desktop/pages/desktop_home_page.dart` | Selecciona la pantalla LimaFac en el cliente completo, integra Dispositivos/Ajustes, conserva las extensiones del tema nativo, cambia la representación de tarjetas y omite el botón de actualización upstream en esa variante. Los controles de sesión y callbacks de permisos se reutilizan. |
 | `flutter/lib/desktop/pages/connection_page.dart` | Añade una presentación opcional del formulario de conexión y un estado compacto para el pie. El autocompletado, validación, menús y acciones de conexión siguen siendo originales. Los valores por defecto conservan el diseño upstream. |
+| `flutter/lib/common/widgets/peer_tab_page.dart` | Añade navegación secundaria opcional y presentación del estado vacío, reutilizando modelos, carga de listas, selección, acciones y filtros existentes. El constructor mantiene el diseño original por defecto. |
+| `flutter/lib/desktop/pages/desktop_setting_page.dart` | Añade presentación integrada opcional, reutiliza las categorías y controles nativos, mantiene el bloqueo durante sesiones y adapta los grupos visuales únicamente dentro de su ámbito LimaFac. |
+| `flutter/lib/desktop/pages/desktop_tab_page.dart` | Dirige los accesos a Ajustes hacia el marco LimaFac cuando está disponible; conserva la ruta original como alternativa. |
 | `flutter/lib/main.dart` | Cambia el título de la ventana principal del cliente completo cuando la interfaz LimaFac está activa. |
 | `flutter/lib/desktop/pages/install_page.dart` | Selecciona el formulario simplificado de instalación y conserva sus métodos de instalación, validación y permisos. |
 

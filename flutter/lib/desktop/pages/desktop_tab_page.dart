@@ -11,6 +11,7 @@ import 'package:window_manager/window_manager.dart';
 // import 'package:flutter/services.dart';
 
 import '../../common/shared_state.dart';
+import '../../limafac/home_shell.dart';
 
 class DesktopTabPage extends StatefulWidget {
   const DesktopTabPage({Key? key}) : super(key: key);
@@ -22,6 +23,14 @@ class DesktopTabPage extends StatefulWidget {
       {SettingsTabKey initialPage = SettingsTabKey.general}) {
     try {
       DesktopTabController tabController = Get.find<DesktopTabController>();
+      final limaFacHome = limaFacHomeShellKey.currentState;
+      if (limaFacHome != null && limaFacHome.canShowSettings) {
+        final index = DesktopSettingPage.tabKeys.indexOf(initialPage);
+        limaFacHome.openSettings(initialSection:
+            initialPage == SettingsTabKey.general || index < 0 ? 0 : index + 1);
+        tabController.jumpToByKey(kTabLabelHomePage);
+        return;
+      }
       tabController.add(TabInfo(
           key: kTabLabelSettingPage,
           label: kTabLabelSettingPage,

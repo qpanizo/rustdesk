@@ -5,8 +5,98 @@ import '../lib/limafac/home_shell.dart';
 import '../lib/limafac/credentials_card.dart';
 import '../lib/limafac/installer_shell.dart';
 import '../lib/limafac/setup_card.dart';
+import '../lib/limafac/sectioned_page.dart';
+import '../lib/limafac/settings_widgets.dart';
 
 void main() {
+  testWidgets(
+    'Settings stays inside the shared shell and changes the same theme',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LimaFacHomeShell(
+              receive: const Text('ID'),
+              connection: const Text('Conectar'),
+              devices: const Text('Equipos'),
+              status: const Text('Listo'),
+              setup: const SizedBox(),
+              needsSetup: false,
+              onQuickConnect: (_) {},
+              onSettings: () {},
+              settingsBuilder: (_, dark, onChanged) =>
+                  LimaFacAppearancePanel(dark: dark, onChanged: onChanged),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Modo oscuro'), findsNothing);
+      await tester.tap(find.byTooltip('Ajustes').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Apariencia'), findsOneWidget);
+      expect(find.byType(Switch), findsNWidgets(2));
+      await tester.tap(find.byType(Switch).last);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<Switch>(find.byType(Switch))
+            .every((control) => control.value),
+        isTrue,
+      );
+      await tester.tap(find.byTooltip('Soporte remoto'));
+      await tester.pumpAndSettle();
+      expect(find.text('Permitir el control remoto'), findsOneWidget);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+      expect(find.text('Modo oscuro'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Device navigation filters categories and works in compact windows',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1000, 760);
+      var selected = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) => LimaFacSectionedPage(
+                navigationTitle: 'Mis dispositivos',
+                searchNavigation: true,
+                sections: const [
+                  LimaFacSectionItem('Últimas conexiones', Icons.history),
+                  LimaFacSectionItem('Favoritos', Icons.star_outline),
+                ],
+                selected: selected,
+                onSelected: (value) => setState(() => selected = value),
+                child: Center(child: Text('Contenido $selected')),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), 'fav');
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ListTile, 'Últimas conexiones'), findsNothing);
+      await tester.tap(find.widgetWithText(ListTile, 'Favoritos'));
+      await tester.pumpAndSettle();
+      expect(find.text('Contenido 1'), findsOneWidget);
+      tester.view.physicalSize = const Size(600, 760);
+      await tester.pumpAndSettle();
+      expect(find.byType(DropdownButtonFormField<int>), findsOneWidget);
+      await tester.tap(find.byType(DropdownButtonFormField<int>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Últimas conexiones').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Contenido 0'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'Credential controls show live values and dispatch the requested action',
     (tester) async {

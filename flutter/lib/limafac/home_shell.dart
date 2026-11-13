@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'brand.dart';
 
+final limaFacHomeShellKey = GlobalKey<LimaFacHomeShellState>();
+
 class LimaFacHomeShell extends StatefulWidget {
   const LimaFacHomeShell({
     super.key,
@@ -14,6 +16,8 @@ class LimaFacHomeShell extends StatefulWidget {
     required this.onQuickConnect,
     required this.onSettings,
     this.warning = const SizedBox.shrink(),
+    this.settingsBuilder,
+    this.themeBuilder,
   });
 
   final Widget receive;
@@ -25,16 +29,37 @@ class LimaFacHomeShell extends StatefulWidget {
   final ValueChanged<String> onQuickConnect;
   final VoidCallback? onSettings;
   final Widget warning;
+  final ThemeData Function(bool dark)? themeBuilder;
+  final Widget Function(
+    int initialSection,
+    bool dark,
+    ValueChanged<bool> onThemeChanged,
+  )?
+  settingsBuilder;
 
   @override
-  State<LimaFacHomeShell> createState() => _LimaFacHomeShellState();
+  State<LimaFacHomeShell> createState() => LimaFacHomeShellState();
 }
 
-class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
+class LimaFacHomeShellState extends State<LimaFacHomeShell> {
   final _search = TextEditingController();
   int _section = 0;
   bool _showSetup = false;
   bool _dark = false;
+  int _settingsInitialSection = 0;
+
+  bool get canShowSettings => widget.settingsBuilder != null;
+
+  void openSettings({int initialSection = 0}) {
+    if (!canShowSettings) {
+      widget.onSettings?.call();
+      return;
+    }
+    setState(() {
+      _settingsInitialSection = initialSection;
+      _section = 2;
+    });
+  }
 
   @override
   void dispose() {
@@ -58,7 +83,7 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
   Widget build(BuildContext context) {
     return Theme(
       data: LimaFacBrand.theme(
-        ThemeData(
+        widget.themeBuilder?.call(_dark) ?? ThemeData(
           brightness: _dark ? Brightness.dark : Brightness.light,
           useMaterial3: false,
         ),
@@ -82,7 +107,7 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                         color: theme.cardColor,
                         child: Column(
                           children: [
-                            _header(context, showThemeLabel: !narrow),
+                            _header(context),
                             Container(
                               height: 38,
                               width: double.infinity,
@@ -101,24 +126,16 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                                 index: _section,
                                 children: [
                                   _supportPage(context),
-                                  Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Dispositivos',
-                                          style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 24),
-                                        Expanded(child: widget.devices),
-                                      ],
-                                    ),
-                                  ),
+                                  widget.devices,
+                                  if (_section == 2 &&
+                                      widget.settingsBuilder != null)
+                                    widget.settingsBuilder!(
+                                      _settingsInitialSection,
+                                      _dark,
+                                      (value) => setState(() => _dark = value),
+                                    )
+                                  else
+                                    const SizedBox.shrink(),
                                 ],
                               ),
                             ),
@@ -220,7 +237,8 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                 'Ajustes',
                 Icons.settings_outlined,
                 narrow,
-                onTap: widget.onSettings!,
+                selected: _section == 2,
+                onTap: openSettings,
               ),
             _navItem(
               'Ayuda',
@@ -287,7 +305,7 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
     );
   }
 
-  Widget _header(BuildContext context, {required bool showThemeLabel}) {
+  Widget _header(BuildContext context) {
     return SizedBox(
       height: 72,
       child: Padding(
@@ -322,10 +340,9 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
               ),
             ),
             const SizedBox(width: 16),
-            if (showThemeLabel)
-              const Text('Modo oscuro', style: TextStyle(fontSize: 12)),
+            const Icon(Icons.light_mode_outlined, size: 17),
             Tooltip(
-              message: 'Modo oscuro',
+              message: 'Cambiar tema',
               child: Switch(
                 value: _dark,
                 onChanged: (value) => setState(() => _dark = value),
@@ -335,10 +352,11 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                 inactiveTrackColor: const Color(0xFFB8BBC3),
               ),
             ),
+            const Icon(Icons.dark_mode_outlined, size: 17),
             if (widget.onSettings != null)
               IconButton(
                 tooltip: 'Ajustes',
-                onPressed: widget.onSettings,
+                onPressed: openSettings,
                 icon: const Icon(Icons.settings_outlined, size: 21),
               ),
             IconButton(
