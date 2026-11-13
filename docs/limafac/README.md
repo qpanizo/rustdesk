@@ -70,6 +70,11 @@ producción firmado y notarizado.
 
 ## Permisos e instalación
 
+La preparación guiada por plataforma y su superficie de regresión se describen
+en [PERMISSIONS.md](PERMISSIONS.md). Incluye los cambios nativos Android/iOS
+y la separación de permisos básicos y opcionales, conservando acceso remoto
+completo donde la plataforma y la base lo soportan.
+
 La interfaz cambia la explicación, no concede permisos por el usuario ni evita
 las comprobaciones del sistema. Grabación de pantalla y Accesibilidad siguen
 siendo necesarios en macOS para recibir control remoto. Monitorización de
@@ -138,14 +143,14 @@ Las pruebas visuales funcionales nuevas están en `flutter/test/limafac_ui_test.
 
 ```sh
 cd flutter
-flutter test test/limafac_ui_test.dart
+flutter test test/limafac_ui_test.dart test/limafac_permissions_test.dart
 ```
 
 Comprobar también una conexión real entre dos equipos, solicitud y rechazo de
 acceso, ID/contraseña, ajuste de ventana, instalador Windows y permisos en un
 Mac limpio. Las pruebas de widgets por sí solas no validan estos flujos nativos.
 
-Validación actual: nueve pruebas de componentes con Flutter 3.47.8; todas
+Validación actual: doce pruebas de componentes con Flutter 3.47.8; todas
 pasaron. Cubren tamaños compacto/escritorio, temas claro/oscuro, navegación,
 búsqueda, credenciales, contraste de botones, detalle de créditos/licencia y
 acciones de configuración/instalación.

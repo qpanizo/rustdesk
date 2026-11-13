@@ -23,6 +23,8 @@ import '../widgets/dialog.dart';
 import 'home_page.dart';
 import 'mobile_keyboard_shortcuts_page.dart';
 import 'scan_page.dart';
+import '../../limafac/brand.dart';
+import '../../limafac/native_permission_setup.dart';
 
 class SettingsPage extends StatefulWidget implements PageShape {
   @override
@@ -766,6 +768,14 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
             ],
           ),
         SettingsSection(title: Text(translate("Settings")), tiles: [
+          if (limaFacUi && !disabledSettings && (isAndroid || isIOS))
+            SettingsTile(title: const Text('Permisos y acceso'), leading: const Icon(Icons.verified_user_outlined),
+              onPressed: (context) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => Theme(
+                data: LimaFacBrand.theme(Theme.of(context)), child: Scaffold(
+                  appBar: AppBar(title: const Text('Permisos y acceso')),
+                  body: const SingleChildScrollView(padding: EdgeInsets.all(16), child: LimaFacNativePermissionSetup()),
+                ),
+              )))),
           if (!disabledSettings && !_hideNetwork && !_hideServer)
             SettingsTile(
                 title: Text(translate('ID/Relay Server')),

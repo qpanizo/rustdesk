@@ -15,6 +15,8 @@ import '../../models/platform_model.dart';
 import '../../models/server_model.dart';
 import '../../utils/android_documents.dart';
 import 'home_page.dart';
+import '../../limafac/brand.dart';
+import '../../limafac/native_permission_setup.dart';
 
 class ServerPage extends StatefulWidget implements PageShape {
   @override
@@ -615,6 +617,10 @@ class _PermissionCheckerState extends State<PermissionChecker> {
   @override
   Widget build(BuildContext context) {
     final serverModel = Provider.of<ServerModel>(context);
+    if (limaFacUi) return Theme(
+      data: LimaFacBrand.theme(Theme.of(context)),
+      child: const LimaFacNativePermissionSetup(),
+    );
     final hasAudioPermission = androidVersion >= 30;
     final hideStopService = isAndroid &&
         bind.mainGetBuildinOption(key: kOptionHideStopService) == 'Y';

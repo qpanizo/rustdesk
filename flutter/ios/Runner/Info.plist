@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>RustDesk</string>
+	<string>LimaFac Remote</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>RustDesk</string>
+	<string>LimaFac Remote</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -44,9 +44,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to scan QR codes</string>
+	<string>LimaFac Remote utiliza la cámara solo para escanear el código QR de un equipo al que quieres conectarte. Puedes conectarte por ID sin dar este permiso.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs photo library access to get QR codes from image</string>
+	<string>LimaFac Remote utiliza la imagen que elijas para leer un código QR. Puedes conectarte por ID sin dar acceso a tus fotos.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

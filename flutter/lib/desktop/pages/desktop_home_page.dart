@@ -28,6 +28,7 @@ import '../../limafac/brand.dart';
 import '../../limafac/home_shell.dart';
 import '../../limafac/setup_card.dart';
 import '../../limafac/credentials_card.dart';
+import '../../limafac/native_permission_setup.dart';
 import '../../common/widgets/peer_tab_page.dart';
 
 class DesktopHomePage extends StatefulWidget {
@@ -87,7 +88,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         devices: const PeerTabPage(limaFacLayout: true),
         status: const OnlineStatusWidget(compact: true),
         warning: buildPresetPasswordWarning(),
-        setup: Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
+        setup: (isMacOS || isWindows) && systemError.isEmpty &&
+            !(isWindows && bind.mainIsInstalledLowerVersion()) ? LimaFacNativePermissionSetup(
+          onSecurity: bind.isDisableSettings() ? null : () => DesktopTabPage.onAddSetting(initialPage: SettingsTabKey.safety),
+          onInstall: () async { await rustDeskWinManager.closeAllSubWindows(); bind.mainGotoInstall(); },
+        ) : Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
         receive: ChangeNotifierProvider.value(
           value: gFFI.serverModel,
           child: Consumer<ServerModel>(
@@ -956,6 +961,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       shouldBeBlocked(_block, canBeBlocked);
+      if (_usesLimaFacUi) setState(() {});
     }
   }
 }

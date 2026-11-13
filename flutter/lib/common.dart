@@ -1538,35 +1538,30 @@ class AndroidPermissionManager {
       return Future.value(true);
     }
 
-    gFFI.invokeMethod("request_permission", type);
-
-    // clear last task
     if (_completer?.isCompleted == false) {
-      _completer?.complete(false);
+      return _current == type ? _completer!.future : Future.value(false);
     }
     _timer?.cancel();
-
     _current = type;
-    _completer = Completer<bool>();
-
-    _timer = Timer(Duration(seconds: 120), () {
-      if (_completer == null) return;
-      if (!_completer!.isCompleted) {
-        _completer!.complete(false);
-      }
-      _completer = null;
-      _current = "";
+    final completer = Completer<bool>();
+    _completer = completer;
+    _timer = Timer(const Duration(seconds: 120), () => complete(type, false));
+    gFFI.invokeMethod("request_permission", type).then((started) {
+      if (!started) complete(type, false);
+    }).catchError((Object error) {
+      debugPrint('Permission request failed: $error');
+      complete(type, false);
     });
-    return _completer!.future;
+    return completer.future;
   }
 
   static complete(String type, bool res) {
-    if (type != _current) {
-      res = false;
-    }
+    if (type != _current) return;
     _timer?.cancel();
-    _completer?.complete(res);
+    final completer = _completer;
+    _completer = null;
     _current = "";
+    if (completer != null && !completer.isCompleted) completer.complete(res);
   }
 }
 

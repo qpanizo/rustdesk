@@ -18,6 +18,7 @@ import '../mobile/pages/server_page.dart';
 import '../mobile/widgets/android_file_transfer_setup.dart';
 import '../utils/android_documents.dart';
 import 'model.dart';
+import '../limafac/brand.dart';
 
 const kLoginDialogTag = "LOGIN";
 
@@ -401,6 +402,12 @@ class ServerModel with ChangeNotifier {
         stopService();
       }
     } else {
+      if (isAndroid && limaFacUi) {
+        // MediaProjection still requests system consent. Optional resources are
+        // configured separately instead of blocking screen sharing startup.
+        await startService();
+        return;
+      }
       if (isAndroid) {
         try {
           await AndroidDocuments.requireLogFolder();

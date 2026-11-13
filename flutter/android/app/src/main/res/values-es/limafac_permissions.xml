@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LimaFac Remote</string>
+    <string name="limafac_input_label">LimaFac Remote · Control remoto</string>
+    <string name="accessibility_service_description">Permite que la persona que autorices pulse y escriba durante el soporte remoto. Actívalo solo si necesitas recibir control táctil o de teclado; puedes compartir pantalla sin este permiso. Puedes desactivarlo en Accesibilidad de Android.</string>
+</resources>

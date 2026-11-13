@@ -20,6 +20,7 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat.getSystemService
+import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
 import ffi.FFI
@@ -80,18 +81,24 @@ fun isSupportVoiceCall(): Boolean {
 }
 
 fun requestPermission(context: Context, type: String) {
+    fun complete(granted: Boolean) {
+        Handler(Looper.getMainLooper()).post {
+            MainActivity.flutterMethodChannel?.invokeMethod(
+                "on_android_permission_result",
+                mapOf("type" to type, "result" to granted)
+            )
+        }
+    }
     XXPermissions.with(context)
         .permission(type)
-        .request { _, all ->
-            if (all) {
-                Handler(Looper.getMainLooper()).post {
-                    MainActivity.flutterMethodChannel?.invokeMethod(
-                        "on_android_permission_result",
-                        mapOf("type" to type, "result" to all)
-                    )
-                }
+        .request(object : OnPermissionCallback {
+            override fun onGranted(permissions: MutableList<String>, allGranted: Boolean) {
+                if (allGranted) complete(true)
             }
-        }
+            override fun onDenied(permissions: MutableList<String>, doNotAskAgain: Boolean) {
+                complete(false)
+            }
+        })
 }
 
 fun startAction(context: Context, action: String) {

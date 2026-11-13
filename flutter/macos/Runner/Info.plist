@@ -42,7 +42,7 @@
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Record the sound from microphone for the purpose of the remote desktop.</string>
+	<string>LimaFac Remote utiliza el micrófono cuando activas una función de audio que lo necesita. No hace falta para compartir solo la pantalla.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
     <key>LSUIElement</key>
