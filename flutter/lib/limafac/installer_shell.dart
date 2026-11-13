@@ -37,8 +37,8 @@ class LimaFacInstallerShell extends StatelessWidget {
                     const Text(
                       'Todo listo para dar soporte',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -60,10 +60,7 @@ class LimaFacInstallerShell extends StatelessWidget {
                     const SizedBox(height: 16),
                     Wrap(spacing: 12, runSpacing: 12, children: actions),
                     const SizedBox(height: 24),
-                    Text(
-                      'LimaFac Remote · Basado en RustDesk',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                    const LimaFacSignature(),
                   ],
                 ),
               ),

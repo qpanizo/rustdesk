@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../lib/limafac/home_shell.dart';
+import '../lib/limafac/brand.dart';
+import '../lib/limafac/icons.dart';
+import '../lib/limafac/policies_page.dart';
 import '../lib/limafac/credentials_card.dart';
 import '../lib/limafac/installer_shell.dart';
 import '../lib/limafac/setup_card.dart';
@@ -9,6 +12,81 @@ import '../lib/limafac/sectioned_page.dart';
 import '../lib/limafac/settings_widgets.dart';
 
 void main() {
+  test(
+    'Active button labels retain contrast and moderate weight in both themes',
+    () {
+      double contrast(Color a, Color b) {
+        final l1 = a.computeLuminance();
+        final l2 = b.computeLuminance();
+        return ((l1 > l2 ? l1 : l2) + .05) / ((l1 > l2 ? l2 : l1) + .05);
+      }
+
+      for (final brightness in Brightness.values) {
+        final theme = LimaFacBrand.theme(
+          ThemeData(
+            brightness: brightness,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
+            ),
+          ),
+        );
+        final label = theme.textButtonTheme.style!.foregroundColor!.resolve({
+          MaterialState.hovered,
+        })!;
+        expect(contrast(label, theme.cardColor), greaterThanOrEqualTo(4.5));
+        expect(
+          contrast(theme.colorScheme.primary, theme.colorScheme.onPrimary),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
+          theme.textTheme.labelLarge!.fontWeight!.value,
+          lessThanOrEqualTo(500),
+        );
+      }
+    },
+  );
+
+  testWidgets(
+    'Policies keeps upstream credits and full license in its detail',
+    (tester) async {
+      var sourceOpened = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: LimaFacBrand.theme(ThemeData()),
+          home: Scaffold(
+            body: LimaFacPoliciesPage(
+              version: '1.5.3',
+              onSource: () => sourceOpened = true,
+              onUpstreamPrivacy: () {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Acceso y permisos'), findsOneWidget);
+      expect(find.text('Acerca de'), findsNothing);
+      await tester.ensureVisible(
+        find.text('Créditos y licencias de código abierto'),
+      );
+      await tester.tap(find.text('Créditos y licencias de código abierto'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('desarrollado en base a RustDesk'),
+        findsOneWidget,
+      );
+      await tester.ensureVisible(find.text('Código fuente'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Código fuente'));
+      expect(sourceOpened, isTrue);
+      await tester.tap(find.text('Ver licencia AGPL-3.0'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('GNU AFFERO GENERAL PUBLIC LICENSE'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'Settings stays inside the shared shell and changes the same theme',
     (tester) async {
@@ -31,6 +109,8 @@ void main() {
         ),
       );
       expect(find.text('Modo oscuro'), findsNothing);
+      expect(find.textContaining('Basado en RustDesk'), findsNothing);
+      expect(find.text('LimaFac Remote · Hecho con'), findsOneWidget);
       await tester.tap(find.byTooltip('Ajustes').first);
       await tester.pumpAndSettle();
       expect(find.text('Apariencia'), findsOneWidget);
@@ -199,7 +279,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         final sidebarAnchor = size.width < 980
-            ? find.byIcon(Icons.connected_tv_rounded)
+            ? find.byWidgetPredicate(
+                (widget) =>
+                    widget is LimaFacIcon &&
+                    widget.icon == Icons.connected_tv_rounded,
+              )
             : find.byType(Image).first;
         final lightSidebar = tester
             .element(sidebarAnchor)

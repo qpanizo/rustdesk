@@ -29,6 +29,7 @@ import '../../common/widgets/dialog.dart';
 import '../../common/widgets/login.dart';
 import '../../limafac/sectioned_page.dart';
 import '../../limafac/settings_widgets.dart';
+import '../../limafac/policies_page.dart';
 
 const double _kTabWidth = 200;
 const double _kTabHeight = 42;
@@ -270,7 +271,15 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
           children.add(const _Printer());
           break;
         case SettingsTabKey.about:
-          children.add(const _About());
+          children.add(widget.limaFacLayout ? futureBuilder(future: () async {
+            return {'version': await bind.mainGetVersion(),
+              'buildDate': await bind.mainGetBuildDate(), 'license': await bind.mainGetLicense()};
+          }(), hasData: (data) => LimaFacPoliciesPage(
+            version: data['version'].toString(), buildDate: data['buildDate'].toString(),
+            license: data['license'].toString(),
+            onSource: () => launchUrlString('https://github.com/qpanizo/rustdesk'),
+            onUpstreamPrivacy: () => launchUrlString('https://rustdesk.com/privacy.html'),
+          )) : const _About());
           break;
       }
     }
@@ -341,7 +350,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
         sections: [
           const LimaFacSectionItem('Personalización', Icons.palette_outlined,
             subtitle: 'Apariencia de LimaFac Remote.'),
-          ...tabs.map((tab) => LimaFacSectionItem(translate(tab.label), tab.unselected)),
+          ...tabs.map((tab) => LimaFacSectionItem(
+            tab.key == SettingsTabKey.about ? 'Políticas y seguridad' : translate(tab.label),
+            tab.key == SettingsTabKey.about ? Icons.policy_outlined : tab.unselected)),
         ],
         selected: _limaFacSection,
         onSelected: _selectLimaFacSection,

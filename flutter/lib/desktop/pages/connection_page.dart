@@ -309,7 +309,7 @@ class _ConnectionPageState extends State<ConnectionPage>
     if (widget.limaFacLayout) {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const Text('Dispositivo de control remoto',
-            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
         const SizedBox(height: 22),
         Text('Control remoto', style: TextStyle(
             color: Theme.of(context).colorScheme.primary, fontSize: 14)),

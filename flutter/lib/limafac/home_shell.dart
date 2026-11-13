@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'icons.dart';
+
 import 'brand.dart';
 
 final limaFacHomeShellKey = GlobalKey<LimaFacHomeShellState>();
@@ -83,10 +85,11 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
   Widget build(BuildContext context) {
     return Theme(
       data: LimaFacBrand.theme(
-        widget.themeBuilder?.call(_dark) ?? ThemeData(
-          brightness: _dark ? Brightness.dark : Brightness.light,
-          useMaterial3: false,
-        ),
+        widget.themeBuilder?.call(_dark) ??
+            ThemeData(
+              brightness: _dark ? Brightness.dark : Brightness.light,
+              useMaterial3: false,
+            ),
       ),
       child: Builder(
         builder: (context) => LayoutBuilder(
@@ -113,13 +116,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
                               width: double.infinity,
                               alignment: Alignment.center,
                               color: theme.colorScheme.primary.withAlpha(12),
-                              child: Text(
-                                'LimaFac Remote · Basado en RustDesk',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.hintColor,
-                                ),
-                              ),
+                              child: const LimaFacSignature(),
                             ),
                             Expanded(
                               child: IndexedStack(
@@ -148,7 +145,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
                                   if (widget.needsSetup)
                                     TextButton.icon(
                                       onPressed: _openSetup,
-                                      icon: const Icon(
+                                      icon: const LimaFacIcon(
                                         Icons.tune_rounded,
                                         size: 16,
                                       ),
@@ -186,7 +183,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
               height: narrow ? 88 : 122,
               child: Center(
                 child: narrow
-                    ? const Icon(
+                    ? const LimaFacIcon(
                         Icons.connected_tv_rounded,
                         color: Colors.white,
                         size: 30,
@@ -271,6 +268,9 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
           color: selected ? const Color(0xFF10847C) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           child: InkWell(
+            hoverColor: Colors.white.withAlpha(18),
+            highlightColor: Colors.white.withAlpha(12),
+            splashColor: Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             onTap: onTap,
             child: SizedBox(
@@ -284,14 +284,18 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
                   children: [
                     IconTheme(
                       data: const IconThemeData(opacity: 1),
-                      child: Icon(icon, color: foreground, size: 21),
+                      child: LimaFacIcon(icon, color: foreground, size: 20),
                     ),
                     if (!narrow) ...[
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           label,
-                          style: TextStyle(color: foreground, fontSize: 14),
+                          style: TextStyle(
+                            color: foreground,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ),
                     ],
@@ -322,11 +326,17 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
                     onSubmitted: (_) => _quickConnect(),
                     decoration: InputDecoration(
                       hintText: 'Buscar y conectar',
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      prefixIcon: const LimaFacIcon(
+                        Icons.search_rounded,
+                        size: 20,
+                      ),
                       suffixIcon: IconButton(
                         tooltip: 'Conectar al ID indicado',
                         onPressed: _quickConnect,
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+                        icon: const LimaFacIcon(
+                          Icons.arrow_forward_rounded,
+                          size: 19,
+                        ),
                       ),
                       filled: false,
                       isDense: true,
@@ -340,7 +350,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
               ),
             ),
             const SizedBox(width: 16),
-            const Icon(Icons.light_mode_outlined, size: 17),
+            const LimaFacIcon(Icons.light_mode_outlined, size: 17),
             Tooltip(
               message: 'Cambiar tema',
               child: Switch(
@@ -352,17 +362,17 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
                 inactiveTrackColor: const Color(0xFFB8BBC3),
               ),
             ),
-            const Icon(Icons.dark_mode_outlined, size: 17),
+            const LimaFacIcon(Icons.dark_mode_outlined, size: 17),
             if (widget.onSettings != null)
               IconButton(
                 tooltip: 'Ajustes',
                 onPressed: openSettings,
-                icon: const Icon(Icons.settings_outlined, size: 21),
+                icon: const LimaFacIcon(Icons.settings_outlined, size: 20),
               ),
             IconButton(
               tooltip: 'Cómo comenzar',
               onPressed: () => _showHelp(context),
-              icon: const Icon(Icons.help_outline_rounded, size: 21),
+              icon: const LimaFacIcon(Icons.help_outline_rounded, size: 20),
             ),
           ],
         ),
@@ -403,7 +413,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
                           'ID de LimaFac',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -455,7 +465,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
               const SizedBox(height: 18),
               TextButton.icon(
                 onPressed: _openSetup,
-                icon: Icon(
+                icon: LimaFacIcon(
                   _showSetup ? Icons.expand_less_rounded : Icons.tune_rounded,
                   size: 18,
                 ),
@@ -479,7 +489,7 @@ class LimaFacHomeShellState extends State<LimaFacHomeShell> {
       children: [
         const Text(
           'Permitir el control remoto',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 22),
         widget.receive,

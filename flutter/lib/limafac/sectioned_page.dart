@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'icons.dart';
+
 class LimaFacSectionItem {
   const LimaFacSectionItem(this.title, this.icon, {this.subtitle = ''});
   final String title;
@@ -67,9 +69,9 @@ class _LimaFacSectionedPageState extends State<LimaFacSectionedPage> {
               child: Row(
                 children: [
                   if (selected != null) ...[
-                    Icon(
+                    LimaFacIcon(
                       selected.icon,
-                      size: 26,
+                      size: 22,
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(width: 14),
@@ -81,8 +83,8 @@ class _LimaFacSectionedPageState extends State<LimaFacSectionedPage> {
                         Text(
                           selected?.title ?? widget.navigationTitle,
                           style: const TextStyle(
-                            fontSize: 23,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         if (selected != null &&
@@ -165,7 +167,10 @@ class _LimaFacSectionedPageState extends State<LimaFacSectionedPage> {
                           decoration: const InputDecoration(
                             hintText: 'Buscar vistas',
                             isDense: true,
-                            prefixIcon: Icon(Icons.search_rounded, size: 18),
+                            prefixIcon: LimaFacIcon(
+                              Icons.search_rounded,
+                              size: 18,
+                            ),
                           ),
                         ),
                       ),
@@ -186,10 +191,13 @@ class _LimaFacSectionedPageState extends State<LimaFacSectionedPage> {
                                   borderRadius: BorderRadius.circular(8),
                                   child: ListTile(
                                     dense: true,
+                                    selected: i == widget.selected,
+                                    hoverColor: theme.colorScheme.primary
+                                        .withAlpha(18),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    leading: Icon(
+                                    leading: LimaFacIcon(
                                       widget.sections[i].icon,
                                       size: 20,
                                       color: i == widget.selected
@@ -204,7 +212,7 @@ class _LimaFacSectionedPageState extends State<LimaFacSectionedPage> {
                                             ? theme.colorScheme.primary
                                             : null,
                                         fontWeight: i == widget.selected
-                                            ? FontWeight.w600
+                                            ? FontWeight.w500
                                             : FontWeight.w400,
                                       ),
                                     ),
@@ -249,7 +257,7 @@ class LimaFacEmptyDevices extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              LimaFacIcon(
                 Icons.inventory_2_outlined,
                 size: 76,
                 color: Theme.of(context).hintColor.withAlpha(150),
@@ -258,7 +266,7 @@ class LimaFacEmptyDevices extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 10),
               Text(

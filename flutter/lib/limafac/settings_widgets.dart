@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'icons.dart';
+
 class LimaFacSettingsScope extends InheritedWidget {
   const LimaFacSettingsScope({super.key, required super.child});
   static bool active(BuildContext context) =>
@@ -38,8 +40,8 @@ class LimaFacSettingsGroup extends StatelessWidget {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -77,18 +79,18 @@ class LimaFacAppearancePanel extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                LimaFacIcon(
                   dark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-                  size: 24,
+                  size: 20,
                 ),
                 const SizedBox(width: 16),
                 const Expanded(child: Text('Tema de la aplicación')),
-                const Icon(Icons.light_mode_outlined, size: 18),
+                const LimaFacIcon(Icons.light_mode_outlined, size: 18),
                 Tooltip(
                   message: 'Cambiar tema',
                   child: Switch(value: dark, onChanged: onChanged),
                 ),
-                const Icon(Icons.dark_mode_outlined, size: 18),
+                const LimaFacIcon(Icons.dark_mode_outlined, size: 18),
               ],
             ),
           ],

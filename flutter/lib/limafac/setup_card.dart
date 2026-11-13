@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'icons.dart';
+
 const limaFacSetupInstructions = {
   'config_screen': (
     '1. Compartir pantalla',
@@ -58,19 +60,19 @@ class LimaFacSetupCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.tune_rounded, size: 20),
+              const LimaFacIcon(Icons.tune_rounded, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
               if (onClose != null)
                 IconButton(
                   tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                   onPressed: onClose,
-                  icon: const Icon(Icons.close, size: 18),
+                  icon: const LimaFacIcon(Icons.close, size: 18),
                 ),
             ],
           ),
