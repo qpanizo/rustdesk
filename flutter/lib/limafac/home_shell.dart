@@ -69,7 +69,7 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
             final narrow = constraints.maxWidth < 980;
             final theme = Theme.of(context);
             return Material(
-              color: LimaFacBrand.sidebar,
+              color: _dark ? LimaFacBrand.darkSidebar : LimaFacBrand.sidebar,
               child: Row(
                 children: [
                   _sidebar(context, narrow),
@@ -82,7 +82,7 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                         color: theme.cardColor,
                         child: Column(
                           children: [
-                            _header(context),
+                            _header(context, showThemeLabel: !narrow),
                             Container(
                               height: 38,
                               width: double.infinity,
@@ -194,7 +194,10 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                       ),
               ),
             ),
-            const Divider(color: Colors.white24, height: 1),
+            Divider(
+              color: _dark ? Theme.of(context).dividerColor : Colors.white24,
+              height: 1,
+            ),
             const SizedBox(height: 16),
             _navItem(
               'Soporte remoto',
@@ -239,6 +242,9 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
     bool selected = false,
     required VoidCallback onTap,
   }) {
+    final foreground = selected
+        ? Colors.white
+        : (_dark ? LimaFacBrand.darkSidebarText : const Color(0xFFBAD9D6));
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Tooltip(
@@ -260,25 +266,14 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
                   children: [
                     IconTheme(
                       data: const IconThemeData(opacity: 1),
-                      child: Icon(
-                        icon,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFFBAD9D6),
-                        size: 21,
-                      ),
+                      child: Icon(icon, color: foreground, size: 21),
                     ),
                     if (!narrow) ...[
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           label,
-                          style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : const Color(0xFFBAD9D6),
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: foreground, fontSize: 14),
                         ),
                       ),
                     ],
@@ -292,7 +287,7 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
     );
   }
 
-  Widget _header(BuildContext context) {
+  Widget _header(BuildContext context, {required bool showThemeLabel}) {
     return SizedBox(
       height: 72,
       child: Padding(
@@ -327,12 +322,17 @@ class _LimaFacHomeShellState extends State<LimaFacHomeShell> {
               ),
             ),
             const SizedBox(width: 16),
-            IconButton(
-              tooltip: _dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
-              onPressed: () => setState(() => _dark = !_dark),
-              icon: Icon(
-                _dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                size: 21,
+            if (showThemeLabel)
+              const Text('Modo oscuro', style: TextStyle(fontSize: 12)),
+            Tooltip(
+              message: 'Modo oscuro',
+              child: Switch(
+                value: _dark,
+                onChanged: (value) => setState(() => _dark = value),
+                activeColor: LimaFacBrand.ink,
+                activeTrackColor: Theme.of(context).colorScheme.primary,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFB8BBC3),
               ),
             ),
             if (widget.onSettings != null)

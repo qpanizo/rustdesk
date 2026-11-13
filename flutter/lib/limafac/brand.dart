@@ -6,21 +6,39 @@ class LimaFacBrand {
   static const accent = Color(0xFF21B2A7);
   static const ink = Color(0xFF152F35);
   static const sidebar = Color(0xFF075E59);
+  static const darkSidebar = Color(0xFF141416);
+  static const darkSidebarText = Color(0xFFAAABB3);
 
   static ThemeData theme(ThemeData base) {
     final dark = base.brightness == Brightness.dark;
     final primary = dark ? const Color(0xFF65D8CD) : const Color(0xFF087C74);
+    final surface = dark ? const Color(0xFF232326) : Colors.white;
+    final foreground = dark ? const Color(0xFFE7E7EC) : const Color(0xFF292A2E);
+    final muted = dark ? const Color(0xFFAAABB3) : const Color(0xFF686A73);
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide(color: base.dividerColor),
+      borderSide: BorderSide(
+        color: dark ? const Color(0xFF606169) : const Color(0xFFB8BBC3),
+      ),
     );
     return base.copyWith(
-      colorScheme: base.colorScheme.copyWith(primary: primary),
+      colorScheme: base.colorScheme.copyWith(
+        primary: primary,
+        onPrimary: dark ? ink : Colors.white,
+        surface: surface,
+        onSurface: foreground,
+        // Upstream's Flutter 3.24 widgets still read the background roles.
+        // ignore: deprecated_member_use
+        background: surface,
+        // ignore: deprecated_member_use
+        onBackground: foreground,
+      ),
       scaffoldBackgroundColor: dark
-          ? const Color(0xFF142126)
+          ? const Color(0xFF151517)
           : const Color(0xFFF5F6F9),
-      cardColor: dark ? const Color(0xFF1C2D33) : Colors.white,
-      dividerColor: dark ? const Color(0xFF34474C) : const Color(0xFFE1E9EB),
+      cardColor: surface,
+      hintColor: muted,
+      dividerColor: dark ? const Color(0xFF3F4046) : const Color(0xFFE1E9EB),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
@@ -33,6 +51,9 @@ class LimaFacBrand {
         ),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
+        fillColor: surface,
+        hintStyle: TextStyle(color: muted),
+        labelStyle: TextStyle(color: muted),
         border: border,
         enabledBorder: border,
         focusedBorder: border.copyWith(borderSide: BorderSide(color: primary)),

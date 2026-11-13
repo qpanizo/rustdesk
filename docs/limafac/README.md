@@ -26,7 +26,9 @@ públicos de uso y la organización de sus interfaces.
 - Distribución basada en la captura de TeamViewer proporcionada: menú lateral,
   buscador superior y un único panel central con credenciales a la izquierda
   y conexión a la derecha. La marca y los colores son de LimaFac.
-- Fondo claro por defecto y botón para alternar el tema de la pantalla principal.
+- Fondo claro por defecto y switch «Modo oscuro» para alternar la apariencia.
+  El modo oscuro usa lateral casi negro, paneles gris neutro y acentos turquesa;
+  textos, iconos, bordes y campos se adaptan al tema.
 - «Dispositivos» abre el historial, favoritos y agenda originales. La búsqueda
   superior conecta mediante la misma función de RustDesk que el campo principal.
 - Tarjeta propia de ID/contraseña enlazada a los controladores originales, con
@@ -155,6 +157,12 @@ validado una sesión remota entre dos equipos ni un instalador de Windows.
 No se modifican el motor Rust, protocolos, modelos, puente FFI ni submódulos.
 La ruta original sigue disponible con `LIMAFAC_UI=false` y en los modos
 restringidos de entrada/salida de la pantalla principal.
+
+La corrección del selector de tema afecta a `flutter/lib/limafac/home_shell.dart`
+(switch y colores adaptativos de navegación) y `flutter/lib/limafac/brand.dart`
+(superficies, campos, bordes y textos neutros del tema oscuro). Se verificó que
+el lateral cambie de color al activar el switch y vuelva a su color original
+al desactivarlo, también en ventanas compactas.
 
 ## Referencias de diseño
 

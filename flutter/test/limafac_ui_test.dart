@@ -108,14 +108,37 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        final sidebarAnchor = size.width < 980
+            ? find.byIcon(Icons.connected_tv_rounded)
+            : find.byType(Image).first;
+        final lightSidebar = tester
+            .element(sidebarAnchor)
+            .findAncestorWidgetOfExactType<Material>()!
+            .color;
+        expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
         if (brightness == Brightness.dark) {
-          await tester.tap(find.byTooltip('Cambiar a modo oscuro'));
+          await tester.tap(find.byType(Switch));
           await tester.pumpAndSettle();
         }
         expect(
           Theme.of(tester.element(find.text('ID de LimaFac'))).brightness,
           brightness,
         );
+        expect(
+          tester.widget<Switch>(find.byType(Switch)).value,
+          brightness == Brightness.dark,
+        );
+        final currentSidebar = tester
+            .element(sidebarAnchor)
+            .findAncestorWidgetOfExactType<Material>()!
+            .color;
+        if (brightness == Brightness.dark) {
+          expect(currentSidebar, isNot(lightSidebar));
+          expect(
+            currentSidebar!.computeLuminance(),
+            lessThan(lightSidebar!.computeLuminance()),
+          );
+        }
         expect(find.text('Permitir el control remoto'), findsOneWidget);
         expect(find.text('ID de LimaFac'), findsOneWidget);
         await tester.tap(find.text('Dispositivos').first);
@@ -130,8 +153,16 @@ void main() {
         expect(find.text('Permitir el control remoto'), findsOneWidget);
         expect(tester.takeException(), isNull);
         if (brightness == Brightness.dark) {
-          await tester.tap(find.byTooltip('Cambiar a modo claro'));
+          await tester.tap(find.byType(Switch));
           await tester.pumpAndSettle();
+          expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+          expect(
+            tester
+                .element(sidebarAnchor)
+                .findAncestorWidgetOfExactType<Material>()!
+                .color,
+            lightSidebar,
+          );
         }
       }
     }
