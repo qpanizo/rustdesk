@@ -22,10 +22,11 @@ import '../../models/platform_model.dart';
 import '../../desktop/widgets/material_mod_popup_menu.dart' as mod_menu;
 
 class OnlineStatusWidget extends StatefulWidget {
-  const OnlineStatusWidget({Key? key, this.onSvcStatusChanged})
+  const OnlineStatusWidget({Key? key, this.onSvcStatusChanged, this.compact = false})
       : super(key: key);
 
   final VoidCallback? onSvcStatusChanged;
+  final bool compact;
 
   @override
   State<OnlineStatusWidget> createState() => _OnlineStatusWidgetState();
@@ -133,7 +134,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
             if (!isIncomingOnly) startServiceWidget(),
             // ready && public
             // No need to show the guide if is custom client.
-            if (!isIncomingOnly) setupServerWidget(),
+            if (!isIncomingOnly && !widget.compact) setupServerWidget(),
           ],
         );
 
@@ -189,7 +190,9 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
 
 /// Connection page for connecting to a remote peer.
 class ConnectionPage extends StatefulWidget {
-  const ConnectionPage({Key? key}) : super(key: key);
+  const ConnectionPage({Key? key, this.limaFacLayout = false}) : super(key: key);
+
+  final bool limaFacLayout;
 
   @override
   State<ConnectionPage> createState() => _ConnectionPageState();
@@ -303,6 +306,17 @@ class _ConnectionPageState extends State<ConnectionPage>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.limaFacLayout) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const Text('Dispositivo de control remoto',
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 22),
+        Text('Control remoto', style: TextStyle(
+            color: Theme.of(context).colorScheme.primary, fontSize: 14)),
+        const SizedBox(height: 28),
+        _buildRemoteIDTextField(context),
+      ]);
+    }
     final isOutgoingOnly = bind.isOutgoingOnly();
     return Column(
       children: [
@@ -377,15 +391,16 @@ class _ConnectionPageState extends State<ConnectionPage>
   /// Search for a peer.
   Widget _buildRemoteIDTextField(BuildContext context) {
     var w = Container(
-      width: 320 + 20 * 2,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-      decoration: BoxDecoration(
+      width: widget.limaFacLayout ? double.infinity : 320 + 20 * 2,
+      padding: widget.limaFacLayout ? EdgeInsets.zero : const EdgeInsets.fromLTRB(20, 24, 20, 22),
+      decoration: widget.limaFacLayout ? null : BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(13)),
           border: Border.all(color: Theme.of(context).colorScheme.background)),
       child: Ink(
         child: Column(
           children: [
-            getConnectionPageTitle(context, false).marginOnly(bottom: 15),
+            if (!widget.limaFacLayout)
+              getConnectionPageTitle(context, false).marginOnly(bottom: 15),
             Row(
               children: [
                 Expanded(
@@ -452,9 +467,9 @@ class _ConnectionPageState extends State<ConnectionPage>
                           enableSuggestions: false,
                           keyboardType: TextInputType.visiblePassword,
                           focusNode: fieldFocusNode,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'WorkSans',
-                            fontSize: 22,
+                            fontSize: widget.limaFacLayout ? 16 : 22,
                             height: 1.4,
                           ),
                           maxLines: 1,
@@ -463,6 +478,7 @@ class _ConnectionPageState extends State<ConnectionPage>
                           decoration: InputDecoration(
                               filled: false,
                               counterText: '',
+                              labelText: widget.limaFacLayout ? 'ID o dirección IP' : null,
                               hintText: _idInputFocused.value
                                   ? null
                                   : translate('Enter Remote ID'),
@@ -550,9 +566,9 @@ class _ConnectionPageState extends State<ConnectionPage>
             ),
             Padding(
               padding: const EdgeInsets.only(top: 13.0),
-              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              child: Row(mainAxisAlignment: widget.limaFacLayout ? MainAxisAlignment.start : MainAxisAlignment.end, children: [
                 SizedBox(
-                  height: 28.0,
+                  height: widget.limaFacLayout ? 38.0 : 28.0,
                   child: ElevatedButton(
                     onPressed: () {
                       onConnect();
@@ -562,8 +578,8 @@ class _ConnectionPageState extends State<ConnectionPage>
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  height: 28.0,
-                  width: 28.0,
+                  height: widget.limaFacLayout ? 38.0 : 28.0,
+                  width: widget.limaFacLayout ? 38.0 : 28.0,
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(8),

@@ -23,11 +23,18 @@ públicos de uso y la organización de sus interfaces.
 
 ## Interfaz implementada
 
-- Pantalla principal con logo y colores LimaFac, paneles «Recibir ayuda» y
-  «Conectarse a un equipo», ajustes y ayuda breve.
-- Se reutilizan los controles originales de ID, contraseña, conexión,
-  historial y agenda. No hay identificadores ni conexiones simulados.
-- Tarjetas de configuración sobrias con instrucciones para cada permiso.
+- Distribución basada en la captura de TeamViewer proporcionada: menú lateral,
+  buscador superior y un único panel central con credenciales a la izquierda
+  y conexión a la derecha. La marca y los colores son de LimaFac.
+- Fondo claro por defecto y botón para alternar el tema de la pantalla principal.
+- «Dispositivos» abre el historial, favoritos y agenda originales. La búsqueda
+  superior conecta mediante la misma función de RustDesk que el campo principal.
+- Tarjeta propia de ID/contraseña enlazada a los controladores originales, con
+  copia y renovación de contraseña temporal mediante los callbacks existentes.
+  Se respetan los modos de aprobación y de contraseña permanente.
+- Configuración del equipo plegable e indicador inferior de permisos pendientes.
+  Los avisos de seguridad por contraseña preconfigurada permanecen visibles.
+  El indicador «Listo» utiliza el estado real del servicio.
 - Instalador de Windows con opciones avanzadas plegadas. Reutiliza la
   validación del directorio, las opciones de instalación, confirmaciones,
   progreso y acciones nativas originales.
@@ -37,9 +44,10 @@ públicos de uso y la organización de sus interfaces.
 
 Los textos propios de LimaFac están en español y no alteran los catálogos de
 traducción del motor. Los controles reutilizados siguen el idioma configurado
-en RustDesk. Los nombres nativos, servicios, identificadores y firma del
-instalador todavía son los originales: este cambio es de interfaz y no es un
-paquete de distribución firmado de LimaFac.
+en RustDesk. El título principal es «LimaFac Remote». Los servicios y el motor
+conservan su identidad original. La copia local de desarrollo para Mac usa el
+identificador `pe.limafac.remote.dev` y firma local; no es un instalador de
+producción firmado y notarizado.
 
 ## Permisos e instalación
 
@@ -118,19 +126,30 @@ Comprobar también una conexión real entre dos equipos, solicitud y rechazo de
 acceso, ID/contraseña, ajuste de ventana, instalador Windows y permisos en un
 Mac limpio. Las pruebas de widgets por sí solas no validan estos flujos nativos.
 
-Validación realizada en esta entrega: cuatro pruebas de los componentes nuevos
-en un proyecto de comprobación aislado con Flutter 3.47.8; todas pasaron. Se
-comprobaron tamaños compacto/escritorio, ambos temas, ayuda, apertura de opciones
-del instalador y activación de callbacks únicamente después de pulsar sus
-botones. No se ha compilado ni instalado el cliente nativo completo: faltan
-preparar el puente nativo y las dependencias de compilación del motor. No se ha
-validado una conexión remota real.
+Validación actual: cinco pruebas de componentes con Flutter 3.47.8; todas
+pasaron. Cubren tamaños compacto/escritorio, temas claro/oscuro, navegación,
+búsqueda, credenciales y acciones de configuración/instalación.
+
+El cliente nativo macOS arm64 se compiló y abrió con el motor oficial del
+commit `3ccb4c4b5b5a8422276dd5f6f211b42e05ec9534`. La única diferencia nativa
+respecto a nuestra base `b84058e07` está en `src/server/uinput.rs` (Linux).
+Se verificaron 318 símbolos del puente contra la biblioteca original, sin
+símbolos faltantes. Se reutilizó el puente generado por el CI oficial; no se
+regeneró localmente. La compilación local aplica en una copia de trabajo los
+ajustes de compatibilidad para Flutter reciente, conservando las fuentes del
+fork para el toolchain original.
+
+La aplicación de desarrollo está en `build/macos/LimaFacRemote.app`. Se comprobó
+el arranque y la presentación de ID real y estado del servicio. No se ha
+validado una sesión remota entre dos equipos ni un instalador de Windows.
 
 ## Superficie de regresión
 
 | Archivo existente | Ruta afectada y motivo |
 | --- | --- |
 | `flutter/lib/desktop/pages/desktop_home_page.dart` | Selecciona la pantalla LimaFac en el cliente completo, cambia la representación de tarjetas y omite el botón de actualización upstream en esa variante. Los controles de sesión y callbacks de permisos se reutilizan. |
+| `flutter/lib/desktop/pages/connection_page.dart` | Añade una presentación opcional del formulario de conexión y un estado compacto para el pie. El autocompletado, validación, menús y acciones de conexión siguen siendo originales. Los valores por defecto conservan el diseño upstream. |
+| `flutter/lib/main.dart` | Cambia el título de la ventana principal del cliente completo cuando la interfaz LimaFac está activa. |
 | `flutter/lib/desktop/pages/install_page.dart` | Selecciona el formulario simplificado de instalación y conserva sus métodos de instalación, validación y permisos. |
 
 No se modifican el motor Rust, protocolos, modelos, puente FFI ni submódulos.

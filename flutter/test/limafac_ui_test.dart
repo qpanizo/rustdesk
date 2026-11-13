@@ -2,10 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../lib/limafac/home_shell.dart';
+import '../lib/limafac/credentials_card.dart';
 import '../lib/limafac/installer_shell.dart';
 import '../lib/limafac/setup_card.dart';
 
 void main() {
+  testWidgets(
+    'Credential controls show live values and dispatch the requested action',
+    (tester) async {
+      final id = TextEditingController(text: '123 456 789');
+      final password = TextEditingController(text: 'abc123');
+      addTearDown(id.dispose);
+      addTearDown(password.dispose);
+      var copiedId = false;
+      var refreshed = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 380,
+              child: LimaFacCredentialsCard(
+                id: id,
+                password: password,
+                onCopyId: () => copiedId = true,
+                onCopyPassword: () {},
+                onRefresh: () => refreshed = true,
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('123 456 789'), findsOneWidget);
+      await tester.tap(find.byTooltip('Copiar ID'));
+      expect(copiedId, isTrue);
+      await tester.tap(find.byTooltip('Renovar contraseña'));
+      expect(refreshed, isTrue);
+      password.text = 'new456';
+      await tester.pump();
+      expect(find.text('new456'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('Installation options expand without starting installation', (
     tester,
   ) async {
@@ -43,7 +81,11 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     tester.view.devicePixelRatio = 1;
-    for (final size in [const Size(1000, 760), const Size(600, 760)]) {
+    for (final size in [
+      const Size(1440, 900),
+      const Size(1000, 760),
+      const Size(600, 760),
+    ]) {
       tester.view.physicalSize = size;
       for (final brightness in Brightness.values) {
         await tester.pumpWidget(
@@ -54,16 +96,43 @@ void main() {
                 receive: const SingleChildScrollView(
                   child: Text('123 456 789'),
                 ),
-                connection: const Center(child: Text('Conectar')),
+                connection: const Text('Conectar'),
+                devices: const Text('Equipos guardados'),
+                status: const Text('Listo'),
+                setup: const Text('Permisos'),
+                needsSetup: true,
+                onQuickConnect: (_) {},
                 onSettings: () {},
               ),
             ),
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.text('Recibir ayuda'), findsOneWidget);
-        expect(find.text('Conectarse a un equipo'), findsOneWidget);
+        if (brightness == Brightness.dark) {
+          await tester.tap(find.byTooltip('Cambiar a modo oscuro'));
+          await tester.pumpAndSettle();
+        }
+        expect(
+          Theme.of(tester.element(find.text('ID de LimaFac'))).brightness,
+          brightness,
+        );
+        expect(find.text('Permitir el control remoto'), findsOneWidget);
+        expect(find.text('ID de LimaFac'), findsOneWidget);
+        await tester.tap(find.text('Dispositivos').first);
+        await tester.pumpAndSettle();
+        expect(find.text('Equipos guardados'), findsOneWidget);
+        await tester.tap(
+          size.width < 980
+              ? find.byTooltip('Soporte remoto')
+              : find.text('Soporte remoto').first,
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Permitir el control remoto'), findsOneWidget);
         expect(tester.takeException(), isNull);
+        if (brightness == Brightness.dark) {
+          await tester.tap(find.byTooltip('Cambiar a modo claro'));
+          await tester.pumpAndSettle();
+        }
       }
     }
   });
@@ -72,12 +141,18 @@ void main() {
     tester,
   ) async {
     var settingsOpened = false;
+    String? connectedId;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: LimaFacHomeShell(
             receive: const SizedBox(),
             connection: const SizedBox(),
+            devices: const SizedBox(),
+            status: const Text('Listo'),
+            setup: const SizedBox(),
+            needsSetup: false,
+            onQuickConnect: (id) => connectedId = id,
             onSettings: () => settingsOpened = true,
           ),
         ),
@@ -89,8 +164,11 @@ void main() {
     expect(settingsOpened, isFalse);
     await tester.tap(find.text('Entendido'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Ajustes'));
+    await tester.tap(find.byTooltip('Ajustes').first);
     expect(settingsOpened, isTrue);
+    await tester.enterText(find.byType(TextField), '123456789');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    expect(connectedId, '123456789');
   });
 
   testWidgets(

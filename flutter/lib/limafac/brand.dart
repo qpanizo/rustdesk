@@ -5,6 +5,7 @@ const limaFacUi = bool.fromEnvironment('LIMAFAC_UI', defaultValue: true);
 class LimaFacBrand {
   static const accent = Color(0xFF21B2A7);
   static const ink = Color(0xFF152F35);
+  static const sidebar = Color(0xFF075E59);
 
   static ThemeData theme(ThemeData base) {
     final dark = base.brightness == Brightness.dark;
@@ -17,7 +18,7 @@ class LimaFacBrand {
       colorScheme: base.colorScheme.copyWith(primary: primary),
       scaffoldBackgroundColor: dark
           ? const Color(0xFF142126)
-          : const Color(0xFFF4F7F8),
+          : const Color(0xFFF5F6F9),
       cardColor: dark ? const Color(0xFF1C2D33) : Colors.white,
       dividerColor: dark ? const Color(0xFF34474C) : const Color(0xFFE1E9EB),
       elevatedButtonTheme: ElevatedButtonThemeData(

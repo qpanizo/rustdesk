@@ -27,6 +27,8 @@ import '../widgets/button.dart';
 import '../../limafac/brand.dart';
 import '../../limafac/home_shell.dart';
 import '../../limafac/setup_card.dart';
+import '../../limafac/credentials_card.dart';
+import '../../common/widgets/peer_tab_page.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
@@ -67,19 +69,39 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     if (_usesLimaFacUi) {
       return _buildBlock(child: LimaFacHomeShell(
         onSettings: bind.isDisableSettings() ? null : DesktopTabPage.onAddSetting,
+        onQuickConnect: (id) => connect(context, id),
+        needsSetup: isMacOS &&
+            (!bind.mainIsCanScreenRecording(prompt: false) ||
+                !bind.mainIsProcessTrusted(prompt: false)),
+        devices: const PeerTabPage(),
+        status: const OnlineStatusWidget(compact: true),
+        warning: buildPresetPasswordWarning(),
+        setup: Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
         receive: ChangeNotifierProvider.value(
           value: gFFI.serverModel,
-          child: SingleChildScrollView(
-            child: Column(children: [
-              buildPresetPasswordWarning(),
-              const SizedBox(height: 16),
-              buildIDBoard(context),
-              buildPasswordBoard(context),
-              Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
-            ]),
+          child: Consumer<ServerModel>(
+            builder: (context, model, _) {
+              final showOneTime = model.approveMode != 'click' &&
+                  model.verificationMethod != kUsePermanentPassword;
+              return LimaFacCredentialsCard(
+                id: model.serverId,
+                password: model.serverPasswd,
+                onCopyId: () {
+                  Clipboard.setData(ClipboardData(text: model.serverId.text));
+                  showToast(translate('Copied'));
+                },
+                onCopyPassword: !showOneTime ? null : () {
+                  Clipboard.setData(ClipboardData(text: model.serverPasswd.text));
+                  showToast(translate('Copied'));
+                },
+                onRefresh: !showOneTime ? null : () => bind.mainUpdateTemporaryPassword(),
+                onSecuritySettings: bind.isDisableSettings() ? null :
+                    () => DesktopTabPage.onAddSetting(initialPage: SettingsTabKey.safety),
+              );
+            },
           ),
         ),
-        connection: const ConnectionPage(),
+        connection: const ConnectionPage(limaFacLayout: true),
       ));
     }
     final isIncomingOnly = bind.isIncomingOnly();
