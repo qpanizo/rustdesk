@@ -11,6 +11,8 @@ import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:window_manager/window_manager.dart';
+import '../../limafac/brand.dart';
+import '../../limafac/installer_shell.dart';
 
 class InstallPage extends StatefulWidget {
   const InstallPage({Key? key}) : super(key: key);
@@ -155,6 +157,7 @@ class _InstallPageBodyState extends State<_InstallPageBody>
 
   @override
   Widget build(BuildContext context) {
+    if (limaFacUi) return _buildLimaFacInstaller(context);
     final double em = 13;
     final isDarkTheme = MyTheme.currentThemeMode() == ThemeMode.dark;
     return Scaffold(
@@ -295,6 +298,56 @@ class _InstallPageBodyState extends State<_InstallPageBody>
             ],
           ).paddingSymmetric(horizontal: 4 * em, vertical: 3 * em),
         ));
+  }
+
+  Widget _buildLimaFacInstaller(BuildContext context) {
+    return LimaFacInstallerShell(
+      options: [
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: controller,
+          builder: (context, value, child) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SelectableText(value.text),
+              InstallDirectoryWarning(directoryPath: value.text),
+            ],
+          ),
+        ),
+        Obx(() => TextButton.icon(
+          onPressed: btnEnabled.value ? selectInstallPath : null,
+          icon: const Icon(Icons.folder_outlined),
+          label: Text(translate('Change Path')),
+        )),
+        Option(startmenu, label: 'Create start menu shortcuts'),
+        Option(desktopicon, label: 'Create desktop icon'),
+        Option(printer, label: 'Install {$appName} Printer'),
+      ],
+      agreement: translate('agreement_tip'),
+      license: TextButton.icon(
+        onPressed: () => launchUrlString('https://rustdesk.com/privacy.html'),
+        icon: const Icon(Icons.open_in_new, size: 16),
+        label: Text(translate('End-user license agreement')),
+      ),
+      progress: Obx(() => showProgress.value
+        ? const LinearProgressIndicator()
+        : const SizedBox(height: 4)),
+      actions: [
+        Obx(() => ElevatedButton.icon(
+          onPressed: btnEnabled.value ? install : null,
+          icon: const Icon(Icons.download_outlined, size: 18),
+          label: Text(translate('Accept and Install')),
+        )),
+        if (!bind.installShowRunWithoutInstall())
+          Obx(() => OutlinedButton(
+            onPressed: btnEnabled.value ? () => bind.installRunWithoutInstall() : null,
+            child: Text(translate('Run without install')),
+          )),
+        Obx(() => TextButton(
+          onPressed: cancelEnabled.value ? () => windowManager.close() : null,
+          child: Text(translate('Cancel')),
+        )),
+      ],
+    );
   }
 
   Future<void> install() async {

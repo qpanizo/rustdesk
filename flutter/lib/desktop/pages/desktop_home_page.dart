@@ -24,6 +24,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import '../widgets/button.dart';
+import '../../limafac/brand.dart';
+import '../../limafac/home_shell.dart';
+import '../../limafac/setup_card.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
@@ -55,9 +58,30 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   final GlobalKey _childKey = GlobalKey();
 
+  bool get _usesLimaFacUi =>
+      limaFacUi && !bind.isIncomingOnly() && !bind.isOutgoingOnly();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (_usesLimaFacUi) {
+      return _buildBlock(child: LimaFacHomeShell(
+        onSettings: bind.isDisableSettings() ? null : DesktopTabPage.onAddSetting,
+        receive: ChangeNotifierProvider.value(
+          value: gFFI.serverModel,
+          child: SingleChildScrollView(
+            child: Column(children: [
+              buildPresetPasswordWarning(),
+              const SizedBox(height: 16),
+              buildIDBoard(context),
+              buildPasswordBoard(context),
+              Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
+            ]),
+          ),
+        ),
+        connection: const ConnectionPage(),
+      ));
+    }
     final isIncomingOnly = bind.isIncomingOnly();
     return _buildBlock(
         child: Row(
@@ -428,7 +452,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   Widget buildHelpCards(String updateUrl) {
-    if (!bind.isCustomClient() &&
+    if (!_usesLimaFacUi && !bind.isCustomClient() &&
         updateUrl.isNotEmpty &&
         !isCardClosed &&
         bind.mainUriPrefixSync().contains('rustdesk')) {
@@ -601,6 +625,19 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           isCardClosed = true;
         });
       }
+    }
+
+    if (_usesLimaFacUi) {
+      final instruction = limaFacSetupInstructions[content];
+      return LimaFacSetupCard(
+        title: instruction?.$1 ?? translate(title),
+        content: instruction?.$2 ?? translate(content),
+        actionLabel: translate(btnText),
+        onAction: onPressed,
+        helpLabel: help == null ? null : translate(help),
+        onHelp: help == null || link == null ? null : () => launchUrl(Uri.parse(link)),
+        onClose: closeButton == true ? closeCard : null,
+      );
     }
 
     return Stack(
