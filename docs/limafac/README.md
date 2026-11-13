@@ -23,6 +23,10 @@ públicos de uso y la organización de sus interfaces.
 
 ## Interfaz implementada
 
+El icono de aplicación usa la propuesta 1 de pantallas enlazadas, con recursos
+nativos optimizados para cada plataforma. Tamaños, pesos y regeneración en
+[ICONS.md](ICONS.md).
+
 - Distribución basada en la captura de TeamViewer proporcionada: menú lateral,
   buscador superior y un único panel central con credenciales a la izquierda
   y conexión a la derecha. La marca y los colores son de LimaFac.
